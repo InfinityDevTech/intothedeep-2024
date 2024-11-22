@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.firstinspires.ftc.teamcode.freeWifi.RR.SampleMecanumDrive
+import org.firstinspires.ftc.teamcode.freeWifi.Robot.Arm
 import org.firstinspires.ftc.teamcode.freeWifi.Robot.Motors
 import org.firstinspires.ftc.teamcode.freeWifi.Robot.Robot
 import org.firstinspires.ftc.vision.VisionPortal
@@ -37,7 +38,11 @@ class Mecanum : LinearOpMode() {
         var speed_pressed = false;
 
         robot.init();
+
+        val arm = Arm(robot);
         val smd = SampleMecanumDrive(robot);
+
+        arm.init();
 
         telemetry.addLine("[ROBOT]: " + robot.currentState);
         telemetry.update();
@@ -48,6 +53,7 @@ class Mecanum : LinearOpMode() {
         // NO VARIABLES IN HERE PERSIST. ITS PER LOOP!
         while (opModeIsActive()) {
             smd.update();
+            arm.read_input()
 
             val pose = smd.poseEstimate;
 
@@ -64,12 +70,12 @@ class Mecanum : LinearOpMode() {
             }
 
             // Per loop variable initialization
-            if (gamepad1.left_bumper && !speed_pressed) {
+            /*if (gamepad1.left_bumper && !speed_pressed) {
                 fast_mode = !fast_mode
                 speed_pressed = true
             } else if (!gamepad1.left_bumper && speed_pressed) {
                 speed_pressed = false
-            }
+            }*/
 
             if (fast_mode) speed = 1.0;
 
