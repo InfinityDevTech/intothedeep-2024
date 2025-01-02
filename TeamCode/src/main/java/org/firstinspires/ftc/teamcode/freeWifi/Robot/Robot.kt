@@ -51,7 +51,7 @@ class Robot(val opMode: OpMode) {
         init.init(); // Populate fields in this class.
 
         //this.motors[Motors.LeftFront]?.direction = DcMotorSimple.Direction.REVERSE;
-        this.motors[Motors.RightFront]?.direction = DcMotorSimple.Direction.REVERSE;
+        //this.motors[Motors.RightFront]?.direction = DcMotorSimple.Direction.REVERSE;
         this.motors[Motors.LeftBack]?.direction = DcMotorSimple.Direction.REVERSE;
 
         telemetry.addLine("[ROBOT]: Initialized Robit");

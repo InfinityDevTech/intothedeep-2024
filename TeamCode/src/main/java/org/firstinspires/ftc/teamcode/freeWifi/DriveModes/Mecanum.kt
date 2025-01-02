@@ -1,14 +1,12 @@
 package org.firstinspires.ftc.teamcode.freeWifi.DriveModes
 
-import com.acmerobotics.roadrunner.geometry.Pose2d
-import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.firstinspires.ftc.teamcode.freeWifi.RR.SampleMecanumDrive
-import org.firstinspires.ftc.teamcode.freeWifi.Robot.Arm
+import org.firstinspires.ftc.teamcode.freeWifi.Robot.Arm_Claw
+import org.firstinspires.ftc.teamcode.freeWifi.Robot.Arm_Lift
 import org.firstinspires.ftc.teamcode.freeWifi.Robot.Motors
 import org.firstinspires.ftc.teamcode.freeWifi.Robot.Robot
 import org.firstinspires.ftc.vision.VisionPortal
@@ -39,10 +37,12 @@ class Mecanum : LinearOpMode() {
 
         robot.init();
 
-        val arm = Arm(robot);
+        val armLift = Arm_Lift(robot);
+        val armClaw = Arm_Claw(robot, armLift);
         val smd = SampleMecanumDrive(robot);
 
-        arm.init();
+        armClaw.init();
+        armLift.init();
 
         telemetry.addLine("[ROBOT]: " + robot.currentState);
         telemetry.update();
@@ -50,10 +50,17 @@ class Mecanum : LinearOpMode() {
         // Wait for the start to press
         waitForStart();
 
+        var last_tick = System.currentTimeMillis();
+
         // NO VARIABLES IN HERE PERSIST. ITS PER LOOP!
         while (opModeIsActive()) {
+            // Time in between loops
+            // Used for time dependent things, like timers!
+            val delta_time = System.currentTimeMillis() - last_tick;
+
             smd.update();
-            arm.read_input()
+            armClaw.tick(delta_time)
+            armLift.read_input()
 
             val pose = smd.poseEstimate;
 
@@ -61,13 +68,6 @@ class Mecanum : LinearOpMode() {
             telemetry.addData("y", pose.y);
             telemetry.addData("heading", pose.heading);
             var speed = 0.7;
-
-            // Delta Time is the time between loops
-            fun deltaTime(): Float {
-                val t = (lastTime - System.currentTimeMillis()).toFloat()
-                lastTime = System.currentTimeMillis()
-                return t
-            }
 
             // Per loop variable initialization
             /*if (gamepad1.left_bumper && !speed_pressed) {
@@ -81,7 +81,7 @@ class Mecanum : LinearOpMode() {
 
             val vertical: Float = -gamepad1.left_stick_y
             val horizontal: Float = gamepad1.left_stick_x
-            val rotation: Float = -gamepad1.right_stick_x
+            val rotation: Float = gamepad1.right_stick_x
 
             robot.setMotorPower(Motors.LeftFront, (-rotation + vertical + horizontal) * speed)
             robot.setMotorPower(Motors.RightFront, (rotation + vertical + -horizontal) * speed)
@@ -95,8 +95,10 @@ class Mecanum : LinearOpMode() {
                 telemetry.addData("Detected: ", det?.first()?.id)
             }
 
-            telemetry.addData("Loop Time (ms)", deltaTime())
+            telemetry.addData("Loop Time (ms)", delta_time)
             telemetry.update();
+
+            last_tick = System.currentTimeMillis();
         }
     }
 
