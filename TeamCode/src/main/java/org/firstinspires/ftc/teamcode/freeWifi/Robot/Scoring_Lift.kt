@@ -10,12 +10,14 @@ enum class LiftPositions {
 }
 
 class Arm_Lift(private val robot: Robot) {
-    private val liftMotor: DcMotor = robot.hardwareMap.get(DcMotor::class.java, "lift_motor")
-    public val bucketServo: Servo = robot.hardwareMap.get(Servo::class.java, "lift_rot")
+    public val liftMotor: DcMotor = robot.hardwareMap.get(DcMotor::class.java, "lift_motor")
+    private val bucketServo: Servo = robot.hardwareMap.get(Servo::class.java, "lift_rot")
 
     private val mid_point: Int = 2150;
     private val high_point: Int = 4250;
     private var arm_motion_lock: Boolean = false;
+
+    public var doing_unfurl: Boolean = false;
 
     private var targeted_pos = 0;
 
@@ -44,7 +46,7 @@ class Arm_Lift(private val robot: Robot) {
             if (!value) {
                 bucketServo.position = 1.0;
             } else {
-                bucketServo.position = 0.5;
+                bucketServo.position = 0.0;
             }
 
             field = value;
@@ -53,10 +55,10 @@ class Arm_Lift(private val robot: Robot) {
 
 
     fun init() {
-        //liftMotor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE;
-        liftMotor.targetPosition = 100;
-        liftMotor.mode = DcMotor.RunMode.RUN_TO_POSITION;
-        //bucket_emptying = false;
+        liftMotor.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE;
+        //liftMotor.targetPosition = 100;
+        //liftMotor.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
+        bucket_emptying = false;
     }
 
     fun raise_lift() {
@@ -84,29 +86,47 @@ class Arm_Lift(private val robot: Robot) {
         }
     }
 
-    fun read_input() {
+    fun tick() {
         //liftMotor.power = 0.0;
         liftMotor.targetPosition = targeted_pos;
-        liftMotor.power = 1.0;
+        //liftMotor.power = 0.0;
+        if (!doing_unfurl) {
+            liftMotor.power = 0.0;
+        }
 
         robot.telemetry.addData("liftMotor.position", liftMotor.currentPosition);
 
-        if (!arm_motion_lock) {
+        if (!arm_motion_lock && !doing_unfurl) {
             if (robot.opMode.gamepad2.dpad_up) {
-                raise_lift();
-                arm_motion_lock = true;
+                //raise_lift();
+                //arm_motion_lock = true;
+                liftMotor.power = 1.0;
             } else if (robot.opMode.gamepad2.dpad_down) {
-                lower_lift();
-                arm_motion_lock = true;
+                //lower_lift();
+                //arm_motion_lock = true;
+                liftMotor.power = -1.0;
             }
         } else if (!robot.opMode.gamepad2.dpad_up && !robot.opMode.gamepad2.dpad_down) {
             arm_motion_lock = false;
         }
+
+        /*if (current_lift_position == LiftPositions.DownPosition && liftMotor.currentPosition <= 10) {
+            liftMotor.power = 0.0;
+        } else {
+            liftMotor.power = 1.0;
+        }*/
+
         /*
         if (robot.opMode.gamepad2.dpad_up) {
             liftMotor.power = -1.0;
         } else if (robot.opMode.gamepad2.dpad_down) {
             liftMotor.power = 1.0;
+        }*/
+
+        /*if (robot.opMode.gamepad2.right_trigger > 0.5) {
+            bucketServo.position = bucketServo.position + 0.001;
+        } else if (robot.opMode.gamepad2.left_trigger > 0.5) {
+            bucketServo.position = bucketServo.position - 0.001;
         }*/
 
         robot.telemetry.addData("lift_rotationary_state", current_lift_position)

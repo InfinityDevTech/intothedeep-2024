@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.freeWifi.Robot
 
-import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.Servo
+import com.qualcomm.robotcore.hardware.*
 
 class Initialize(private val robot: Robot) {
     fun init() {
@@ -15,6 +13,9 @@ class Initialize(private val robot: Robot) {
             Motors.LeftBack to robot.hardwareMap.get(DcMotor::class.java, "back_left"),
             Motors.RightBack to robot.hardwareMap.get(DcMotor::class.java, "back_right"),
         )
+
+        //robot.motors[Motors.LeftBack]?.direction = DcMotorSimple.Direction.REVERSE;
+        //robot.motors[Motors.RightBack]?.direction = DcMotorSimple.Direction.REVERSE;
 
         robot.servos = hashMapOf();
 

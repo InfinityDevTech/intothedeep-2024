@@ -5,10 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.firstinspires.ftc.teamcode.freeWifi.RR.SampleMecanumDrive
-import org.firstinspires.ftc.teamcode.freeWifi.Robot.Arm_Claw
-import org.firstinspires.ftc.teamcode.freeWifi.Robot.Arm_Lift
-import org.firstinspires.ftc.teamcode.freeWifi.Robot.Motors
-import org.firstinspires.ftc.teamcode.freeWifi.Robot.Robot
+import org.firstinspires.ftc.teamcode.freeWifi.Robot.*
 import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 
@@ -39,10 +36,12 @@ class Mecanum : LinearOpMode() {
 
         val armLift = Arm_Lift(robot);
         val armClaw = Arm_Claw(robot, armLift);
+        val lift = Lift(robot, armClaw);
         val smd = SampleMecanumDrive(robot);
 
         armClaw.init();
         armLift.init();
+        lift.init();
 
         telemetry.addLine("[ROBOT]: " + robot.currentState);
         telemetry.update();
@@ -50,17 +49,18 @@ class Mecanum : LinearOpMode() {
         // Wait for the start to press
         waitForStart();
 
-        var last_tick = System.currentTimeMillis();
+        //var last_tick: Long = System.currentTimeMillis();
 
         // NO VARIABLES IN HERE PERSIST. ITS PER LOOP!
         while (opModeIsActive()) {
             // Time in between loops
             // Used for time dependent things, like timers!
-            val delta_time = System.currentTimeMillis() - last_tick;
+            //val delta_time: Long = System.currentTimeMillis() - last_tick;
 
             smd.update();
-            armClaw.tick(delta_time)
-            armLift.read_input()
+            armClaw.tick()
+            lift.tick();
+            armLift.tick()
 
             val pose = smd.poseEstimate;
 
@@ -95,10 +95,7 @@ class Mecanum : LinearOpMode() {
                 telemetry.addData("Detected: ", det?.first()?.id)
             }
 
-            telemetry.addData("Loop Time (ms)", delta_time)
             telemetry.update();
-
-            last_tick = System.currentTimeMillis();
         }
     }
 
