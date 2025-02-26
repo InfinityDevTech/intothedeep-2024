@@ -16,7 +16,7 @@ class Arm_Claw(private val robot: Robot, private val lift: Arm_Lift) {
     public var clawOpen: Boolean = false
         set(value) {
             if (clawOpen) {
-                clawServo.position = 0.75;
+                clawServo.position = 0.9;
             } else {
                 clawServo.position = 0.21;
             }
@@ -24,32 +24,26 @@ class Arm_Claw(private val robot: Robot, private val lift: Arm_Lift) {
             field = value
         }
 
-    //private var claw_rot_max: Double = 0.62;
-    private var claw_rot_max: Double = 1.0;
+    // This is for the CLAW portion, this is used for the
+    // dynamic adjustments based off of the armMotor position
+    private var clawGroundPos: Double = 0.45;
+    private var clawBucketPos: Double = 0.0;
+    private var clawRange: Double = clawGroundPos - clawBucketPos;
 
-    //private var claw_ground_pos: Double = 0.244;
-    //private var claw_bucket_pos: Double = 0.659;
-    private var claw_ground_pos: Double = 0.0;
-    private var claw_bucket_pos: Double = 1.0;
-    private var claw_range: Double = claw_bucket_pos - claw_ground_pos;
+    // This is for the ARM portion of the claw mechanism
+    // NOT to be confused with the CLAW portion of the mechanism
+    // Nice one.
+    private var clawArmBucketPos: Double = 0.66;
+    private var clawArmGroundPos: Double = 0.29;
+    private var clawArmRange: Double = clawArmBucketPos - clawArmGroundPos;
 
-    //private var arm_ground_limit: Double = 0.2267;
-    //private var arm_bucket_limit: Double = 0.6517;
-    private var arm_ground_limit: Double = 0.0;
-    private var arm_bucket_limit: Double = 1.0;
-    private var arm_range: Double = arm_bucket_limit - arm_ground_limit;
-
-    // Arm set positions, because IDGAF
-    private var arm_down_position: Double = 0.8840;
-    private var arm_mid_position: Double = 0.6570;
-    private var arm_high_position: Double = 0.2080;
 
     private var toggle_lock: Boolean = false;
 
-    private var input_lock: Boolean = true;
     private var start_time: Long = 0;
     private var claw_move_timer: Long = 1000;
-    private var initialized = armMotor.position > arm_bucket_limit;
+    //private var initialized = armMotor.position > clawArmBucketPos;
+    private var initialized = true;
 
     private var time: Long = System.currentTimeMillis();
 
@@ -57,26 +51,14 @@ class Arm_Claw(private val robot: Robot, private val lift: Arm_Lift) {
         if (!initialized) {
             lift.doing_unfurl = true;
         }
-        //armMotor2.direction = Servo.Direction.REVERSE
         armMotor.direction = Servo.Direction.REVERSE
-        //clawOpen = true;
-        //armMotor.position = 0.0;
-        //armMotor2.position = 0.0;
-
-        //move_to_pos(arm_start_rotation);
     }
 
     // The pos is in reference to the armMotor.
     // NOT armMotor2
     fun move_to_pos(pos: Double) {
-        //armMotor.position = pos;
-        //armMotor2.position = pos;
-    }
-
-    fun unfurl_claw() {
-        lift.bucket_emptying = true;
-
-        move_to_pos(arm_bucket_limit)
+        armMotor.position = pos;
+        armMotor2.position = pos;
     }
 
     fun tick() {
@@ -85,8 +67,8 @@ class Arm_Claw(private val robot: Robot, private val lift: Arm_Lift) {
         robot.telemetry.addData("ArmMotor.position", armMotor.position);
         robot.telemetry.addData("ArmMotor2.position", armMotor2.position);
 
-        if (//!initialized
-        false ) {
+        //if (!initialized) {
+        if (false) {
             lift.doing_unfurl = true;
             if (start_time == 0.toLong()) {
                 start_time = System.currentTimeMillis();
@@ -97,7 +79,7 @@ class Arm_Claw(private val robot: Robot, private val lift: Arm_Lift) {
             robot.telemetry.addData("claw time", claw_move_timer)
             if (claw_move_timer >= 1000) {
                 lift.liftMotor.power = 0.0
-                move_to_pos(arm_bucket_limit - 0.2)
+                move_to_pos(clawArmBucketPos - 0.2)
                 initialized = true;
                 lift.doing_unfurl = false;
             } else {
@@ -105,26 +87,26 @@ class Arm_Claw(private val robot: Robot, private val lift: Arm_Lift) {
             }
         }
 
-        if (clawRotation.position > claw_rot_max) {
-            clawRotation.position = claw_rot_max
-        }
+        //if (clawRotation.position > clawGroundPos) {
+        //    clawRotation.position = clawGroundPos
+        //}
 
         // Limit the arms rotation to the bucket max or the
         // ground max.
-        if (armMotor.position > arm_bucket_limit || armMotor2.position > arm_bucket_limit) {
-            //move_to_pos(arm_bucket_limit)
-        } else if (armMotor.position < arm_ground_limit || armMotor2.position < arm_ground_limit) {
-            //move_to_pos(arm_ground_limit)
+        if (armMotor.position > clawArmBucketPos || armMotor2.position > clawArmBucketPos) {
+            move_to_pos(clawArmBucketPos)
+        } else if (armMotor.position < clawArmGroundPos || armMotor2.position < clawArmGroundPos) {
+            move_to_pos(clawArmGroundPos)
         }
 
         robot.telemetry.addData("clawRotation.position", clawRotation.position);
         robot.telemetry.addData("delta", delta);
 
         if (robot.opMode.gamepad2.left_bumper) {
-            armMotor.position += (2 * delta)
+            armMotor.position += 0.5 * delta;
             armMotor2.position = armMotor.position;
         } else if (robot.opMode.gamepad2.right_bumper) {
-            armMotor.position -= (2 * delta)
+            armMotor.position -= 0.5 * delta;
             armMotor2.position = armMotor.position
         }
 
@@ -138,9 +120,12 @@ class Arm_Claw(private val robot: Robot, private val lift: Arm_Lift) {
         }
 
         // Calculate the current % we are along the range
-        var arm_rot_percent: Double = armMotor.position / arm_range
-        var claw_rot: Double = claw_range * arm_rot_percent;
+        var arm_rot_percent: Double = armMotor.position / clawArmRange
+        var claw_rot: Double = clawRange * arm_rot_percent;
 
-        //clawRotation.position = claw_rot;
+        // Flipped at some point, woopsies I guess?
+        clawRotation.position = 1.0 - claw_rot;
+
+        robot.telemetry.addData("clawRotation.position", clawRotation.position);
     }
 }

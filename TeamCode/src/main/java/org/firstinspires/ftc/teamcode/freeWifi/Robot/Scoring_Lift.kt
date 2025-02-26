@@ -44,9 +44,9 @@ class Arm_Lift(private val robot: Robot) {
     public var bucket_emptying: Boolean = false
         set(value) {
             if (!value) {
-                bucketServo.position = 1.0;
-            } else {
                 bucketServo.position = 0.0;
+            } else {
+                bucketServo.position = 1.0;
             }
 
             field = value;

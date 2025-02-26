@@ -5,13 +5,18 @@ import com.qualcomm.robotcore.hardware.Servo
 
 class Lift(private val robot: Robot, private val claw: Arm_Claw) {
     private val liftRotation: DcMotor = robot.hardwareMap.get(DcMotor::class.java, "lift_rotation")
+    private val liftRotation2: DcMotor = robot.hardwareMap.get(DcMotor::class.java, "lift_rotation2");
     private val liftActuator: DcMotor = robot.hardwareMap.get(DcMotor::class.java, "lift_actuator")
 
     private var end_game_hold: Boolean = false;
     private var hold_lock: Boolean = false;
 
+    // Brake, because we dont want it to just flop over
+    // The motors probably have enough torque to hold it, but like
+    // Why test it?
     fun init() {
         liftRotation.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+        liftRotation2.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE;
         liftActuator.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
     }
 
@@ -22,15 +27,19 @@ class Lift(private val robot: Robot, private val claw: Arm_Claw) {
 
         if (robot.opMode.gamepad2.left_trigger > 0.1) {
             liftRotation.power = -1.0;
+            liftRotation2.power = -1.0;
             //claw.clawOpen = false;
         } else if (robot.opMode.gamepad2.right_trigger > 0.1) {
             liftRotation.power = 1.0;
+            liftRotation2.power = 1.0;
             //claw.clawOpen = false;
         } else if (end_game_hold) {
             liftRotation.power = 1.0;
+            liftRotation2.power = 1.0;
             //claw.clawOpen = false;
         } else {
             liftRotation.power = 0.0;
+            liftRotation2.power = 0.0;
         }
 
         if (robot.opMode.gamepad2.b && !hold_lock) {

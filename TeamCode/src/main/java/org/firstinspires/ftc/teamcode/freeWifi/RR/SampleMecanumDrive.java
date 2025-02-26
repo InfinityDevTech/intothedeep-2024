@@ -73,10 +73,18 @@ public class SampleMecanumDrive extends MecanumDrive {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
-        leftFront = (DcMotorEx) robot.motors.get(Motors.LeftFront);
-        leftRear = (DcMotorEx) robot.motors.get(Motors.LeftBack);
-        rightRear = (DcMotorEx) robot.motors.get(Motors.RightBack);
-        rightFront = (DcMotorEx) robot.motors.get(Motors.RightFront);
+        //leftFront = (DcMotorEx) robot.motors.get(Motors.LeftFront);
+        //leftRear = (DcMotorEx) robot.motors.get(Motors.LeftBack);
+        //rightRear = (DcMotorEx) robot.motors.get(Motors.RightBack);
+        //rightFront = (DcMotorEx) robot.motors.get(Motors.RightFront);
+        leftFront = (DcMotorEx) robot.motors.get(Motors.RightFront);
+        leftRear = (DcMotorEx) robot.motors.get(Motors.RightBack);
+        rightFront = (DcMotorEx) robot.motors.get(Motors.LeftBack);
+        rightRear = (DcMotorEx) robot.motors.get(Motors.LeftFront);
+
+
+        //leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
+        //rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
 
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 

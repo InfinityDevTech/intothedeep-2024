@@ -67,7 +67,7 @@ class Mecanum : LinearOpMode() {
             telemetry.addData("x", pose.x);
             telemetry.addData("y", pose.y);
             telemetry.addData("heading", pose.heading);
-            var speed = 0.7;
+            var speed = 1.0;
 
             // Per loop variable initialization
             /*if (gamepad1.left_bumper && !speed_pressed) {
@@ -84,9 +84,9 @@ class Mecanum : LinearOpMode() {
             val rotation: Float = gamepad1.right_stick_x
 
             robot.setMotorPower(Motors.LeftFront, (-rotation + vertical + horizontal) * speed)
-            robot.setMotorPower(Motors.RightFront, (rotation + vertical + -horizontal) * speed)
+            robot.setMotorPower(Motors.RightFront, (rotation + vertical + horizontal) * speed)
             robot.setMotorPower(Motors.LeftBack, (-rotation + vertical + -horizontal) * speed)
-            robot.setMotorPower(Motors.RightBack, (rotation + vertical + horizontal) * speed)
+            robot.setMotorPower(Motors.RightBack, (rotation + vertical + -horizontal) * speed)
 
             val det = aprilTag?.detections;
 
@@ -105,8 +105,8 @@ class Mecanum : LinearOpMode() {
         aprilTag = AprilTagProcessor.easyCreateWithDefaults()
 
         // Create the vision portal the easy way.
-            visionPortal = VisionPortal.easyCreateWithDefaults(
-                hardwareMap[WebcamName::class.java, "Webcam 1"], aprilTag
-            )
+        visionPortal = VisionPortal.easyCreateWithDefaults(
+            hardwareMap[WebcamName::class.java, "Webcam 1"], aprilTag
+        )
     }
 }
